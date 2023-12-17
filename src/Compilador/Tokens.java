@@ -5,6 +5,7 @@ public enum Tokens {
     programa, 
     num,
     Entero("int"),
+    Default ("default"),
     Float("float"),
     Boolean("boolean"),
     Char("char"),

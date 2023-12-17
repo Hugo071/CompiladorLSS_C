@@ -975,7 +975,7 @@ class Lexer {
           // fall through
           case 63: break;
           case 27:
-            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"scan",yyline); return Scan;
+            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"scan",yyline); return scan;
             }
           // fall through
           case 64: break;
@@ -1000,12 +1000,12 @@ class Lexer {
           // fall through
           case 68: break;
           case 32:
-            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"print",yyline); return Print;
+            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"print",yyline); return print;
             }
           // fall through
           case 69: break;
           case 33:
-            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"vchar",yyline); return Vchar;
+            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"vchar",yyline); return vchar;
             }
           // fall through
           case 70: break;
@@ -1025,7 +1025,7 @@ class Lexer {
           // fall through
           case 73: break;
           case 37:
-            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"programa",yyline); return Programa;
+            { t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"programa",yyline); return programa;
             }
           // fall through
           case 74: break;
