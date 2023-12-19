@@ -367,10 +367,7 @@ public class Principal extends javax.swing.JFrame {
     private void TipoAsignacion(String lexema, String nlinea)
     {
         if(tablaSimbolos.get(lexema) != null)
-        {
             tipoAsig = tablaSimbolos.get(lexema);
-            System.out.print(tipoAsig + " ");
-        }
         else
         {
             err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " no existe" + "\n";
