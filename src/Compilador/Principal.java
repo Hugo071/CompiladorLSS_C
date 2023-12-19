@@ -281,16 +281,11 @@ public class Principal extends javax.swing.JFrame {
         switch (estado) 
         {
             case "6":
-                tipo = 0; //int 
-                break;
             case "7":
-                tipo = 1; // float
-                break;
             case "8":
-                tipo = 2; // boolean
-                break;
             case "9":
-                tipo = 3; // char
+                // Reconocer el tipo de dato de los id´s que se registraran
+                TipoID(estado);
                 break;
             case "19":
             case "46":
@@ -299,6 +294,11 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "27":
                 tipo = -1;
+                break;
+            case "15":
+                // Guardar el tipo de dato de la variable a la que se le asigna
+                TipoAsignacion(lexema, nlinea);
+                break;
         }
 // //////////////////////////////////////////////////////////
         
@@ -332,18 +332,23 @@ public class Principal extends javax.swing.JFrame {
         return false;
     }
     
-    private void Error(int estado, String lexema, String nlinea)
+    private void TipoID(String estado)
     {
-        if(!lexema.equals(""))
-            err+="Error sintactico en linea "+nlinea+", no se esperaba "+lexema+" se esperaba: ";
-        else
-            err+="Error sintactico en linea "+nlinea+", se esperaba: ";
-        for(int i=0; i<36; i++)
-            if(!Tabla[estado][i].equals(""))
-                err+=Columnas.get(i)+" ";
-        res+="La cadena no se acepta...";
-        sintactico.setText(res);
-        errores.setText(err);
+        switch (estado) 
+        {
+            case "6":
+                tipo = 0; //int 
+                break;
+            case "7":
+                tipo = 1; // float
+                break;
+            case "8":
+                tipo = 2; // boolean
+                break;
+            case "9":
+                tipo = 3; // char
+                break;
+        }
     }
     
     private void RegistrarID(String lexema, String nlinea)
@@ -357,6 +362,36 @@ public class Principal extends javax.swing.JFrame {
             res+="La cadena no se acepta...";
             sintactico.setText(res);
         }
+    }
+    
+    private void TipoAsignacion(String lexema, String nlinea)
+    {
+        if(tablaSimbolos.get(lexema) != null)
+        {
+            tipoAsig = tablaSimbolos.get(lexema);
+            System.out.print(tipoAsig + " ");
+        }
+        else
+        {
+            err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " no existe" + "\n";
+            errores.setText(err);
+            res+="La cadena no se acepta...";
+            sintactico.setText(res);
+        }
+    }
+    
+    private void Error(int estado, String lexema, String nlinea)
+    {
+        if(!lexema.equals(""))
+            err+="Error sintactico en linea "+nlinea+", no se esperaba "+lexema+" se esperaba: ";
+        else
+            err+="Error sintactico en linea "+nlinea+", se esperaba: ";
+        for(int i=0; i<36; i++)
+            if(!Tabla[estado][i].equals(""))
+                err+=Columnas.get(i)+" ";
+        res+="La cadena no se acepta...";
+        sintactico.setText(res);
+        errores.setText(err);
     }
 
     private void InicializarPilas() {
