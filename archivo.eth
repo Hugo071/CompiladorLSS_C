@@ -1,6 +1,8 @@
 programa {
 int a, b;
-float c;
+float c, d;
+char e, f;
+boolean g, h;
 a = scan();
 b = 4;
 switch (a) {

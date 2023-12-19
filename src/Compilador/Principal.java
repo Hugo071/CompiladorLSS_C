@@ -33,7 +33,7 @@ public class Principal extends javax.swing.JFrame {
     ArrayList<Integer> Reducciones = new ArrayList<>(Arrays.asList(2, 10, 6, 0, 2, 2, 2, 2, 0, 2, 2, 2, 2, 6, 4, 10, 2, 2, 4, 4, 4, 4, 4, 4, 4, 0, 6, 6, 4, 6, 6, 0, 4, 6, 6, 0, 2, 2, 2, 6, 2, 2, 16, 4, 6, 12, 20, 12, 6));
     ArrayList<String> NTProduccion = new ArrayList<>(Arrays.asList("I´", "I", "P","P", "B", "B", "B", "B","B", "Tipo", "Tipo", "Tipo", "Tipo", "V", "V", "A","A´","A´", "Relacional", "R", "R", "R", "R", "R", "R", "R", "Exp", "Exp", "Exp", "E", "E", "E", "Term", "T", "T", "T", "F", "F", "F", "F", "F", "F", "SwitchStatement", "CaseList", "CaseList", "Case", "DoWhileStatement", "printStatement", "scanStatement"));
     Map<String, Integer> tablaSimbolos = new LinkedHashMap<>();
-    ArrayList<Integer> tipoDato = new ArrayList<>(Arrays.asList(0, 1, 2)); // 0 --> Entero | 1 --> Flotante | 2 --> Char
+    ArrayList<Integer> tipoDato = new ArrayList<>(Arrays.asList(0, 1, 2,3)); // 0 --> Int | 1 --> Float | 2 --> Boolean | 3 --> Char
     public String componente; 
     Stack<String> pilaOperadores = new Stack();
     Stack<String> pilaSemantica = new Stack();
@@ -234,9 +234,9 @@ public class Principal extends javax.swing.JFrame {
         while(ban == false)
         {
             int ren, col = 0;
-            System.out.println("\nComponente: "+comp);
+            //System.out.println("\nComponente: "+comp);
             cimaPila = pila.peek();
-            System.out.println("Cima de la pila: "+cimaPila);
+            //System.out.println("Cima de la pila: "+cimaPila);
             ren = Integer.parseInt(cimaPila.substring(1));
             for(String columna : Columnas)
             {
@@ -245,7 +245,7 @@ public class Principal extends javax.swing.JFrame {
                 else
                     col++;
             }
-            System.out.println("Renglon: "+ren + " Columna: " + col);
+            //System.out.println("Renglon: "+ren + " Columna: " + col);
             accion = Tabla[ren][col];
             if(accion.equals(""))
             {
@@ -261,7 +261,7 @@ public class Principal extends javax.swing.JFrame {
             switch(accion.substring(0, 1))
             {
                 case "q":
-                    ban=Desplazar(comp, accion);
+                    ban=Desplazar(comp, accion, lexema, accion.substring(1), nlinea);
                     break;
                 case "P":
                     ban=Reduccion(accion);
@@ -271,11 +271,37 @@ public class Principal extends javax.swing.JFrame {
         return true;
     }
     
-    private boolean Desplazar(String comp, String accion)
+    private boolean Desplazar(String comp, String accion, String lexema, String estado, String nlinea)
     {
         pila.push(comp);
         pila.push(accion);
-        System.out.println("Desplazamiento.- " + "Terminal: " + comp + " Estado: " + pila.peek());
+        //System.out.println("Desplazamiento.- " + "Terminal: " + comp + " Estado: " + pila.peek());
+        
+// Acciones semanticas de acuerdo a estados
+        switch (estado) 
+        {
+            case "6":
+                tipo = 0; //int 
+                break;
+            case "7":
+                tipo = 1; // float
+                break;
+            case "8":
+                tipo = 2; // boolean
+                break;
+            case "9":
+                tipo = 3; // char
+                break;
+            case "19":
+            case "46":
+                // Registrar identificadores
+                RegistrarID(lexema, nlinea);
+                break;
+            case "27":
+                tipo = -1;
+        }
+// //////////////////////////////////////////////////////////
+        
         return true;
     }
     
@@ -302,7 +328,7 @@ public class Principal extends javax.swing.JFrame {
         }
         estadoact = Tabla[ren][col];
         pila.push(estadoact);
-        System.out.println("Reduccion.- " + "NT: " + nt + " Cima de la Pila: " + pila.peek() + " Produccion: " + redu +" Estado Ant: " + estadoant);
+        //System.out.println("Reduccion.- " + "NT: " + nt + " Cima de la Pila: " + pila.peek() + " Produccion: " + redu +" Estado Ant: " + estadoant);
         return false;
     }
     
@@ -318,6 +344,19 @@ public class Principal extends javax.swing.JFrame {
         res+="La cadena no se acepta...";
         sintactico.setText(res);
         errores.setText(err);
+    }
+    
+    private void RegistrarID(String lexema, String nlinea)
+    {
+        if(tablaSimbolos.get(lexema) == null && tipo != -1)
+            tablaSimbolos.put(lexema, tipo);
+        else
+        {
+            err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " ya existe" + "\n";
+            errores.setText(err);
+            res+="La cadena no se acepta...";
+            sintactico.setText(res);
+        }
     }
 
     private void InicializarPilas() {
@@ -684,6 +723,8 @@ public class Principal extends javax.swing.JFrame {
         err = "";
         AnalisisLexico();
         interm.setText(intermedio);
+        //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())
+            //System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
