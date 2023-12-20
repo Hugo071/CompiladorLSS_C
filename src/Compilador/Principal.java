@@ -29,6 +29,7 @@ public class Principal extends javax.swing.JFrame {
     UndoManager manager;
     Lexer lexer;
     public Stack<String> pila = new Stack();
+    ArrayList<String> opRelacionales = new ArrayList<>(Arrays.asList("==","!=",	"<","<=",">",">=","("));
     ArrayList<String> Columnas = new ArrayList<>(Arrays.asList("programa",	"id",	"num","int","float","boolean","char","vchar","true","false",	";",	":",	",",	 "+",	 "-",	"*",	"/",	"{",	"}",	"(",	")",	 "=",	"<",	">",	"!=",	"<=",	">=",	 "==",	"switch",	"do",	"while",	"case","default",	"break",	"print",	"scan",	"$",	"I",	"P",	"B",	"Tipo",	"V",	"A",	"A´", "Relacional",	"R",	"Exp",	"E",	"Term",	"T",	"F",	"SwitchStatement",	"CaseList",	"Case",	"DoWhileStatement",	"printStatement",	"scanStatement"));
     ArrayList<Integer> Reducciones = new ArrayList<>(Arrays.asList(2, 10, 6, 0, 2, 2, 2, 2, 0, 2, 2, 2, 2, 6, 4, 10, 2, 2, 4, 4, 4, 4, 4, 4, 4, 0, 6, 6, 4, 6, 6, 0, 4, 6, 6, 0, 2, 2, 2, 6, 2, 2, 16, 4, 6, 12, 20, 12, 6));
     ArrayList<String> NTProduccion = new ArrayList<>(Arrays.asList("I´", "I", "P","P", "B", "B", "B", "B","B", "Tipo", "Tipo", "Tipo", "Tipo", "V", "V", "A","A´","A´", "Relacional", "R", "R", "R", "R", "R", "R", "R", "Exp", "Exp", "Exp", "E", "E", "E", "Term", "T", "T", "T", "F", "F", "F", "F", "F", "F", "SwitchStatement", "CaseList", "CaseList", "Case", "DoWhileStatement", "printStatement", "scanStatement"));
@@ -296,8 +297,32 @@ public class Principal extends javax.swing.JFrame {
                 tipo = -1;
                 break;
             case "15":
+            case "36":
                 // Guardar el tipo de dato de la variable a la que se le asigna
                 TipoAsignacion(lexema, nlinea);
+                break;
+            case "48":
+                FinExpresion();
+                expPosfija = "";
+                break;
+            case "32": //+
+            case "33": //-
+            case "39": //(
+            case "50": //<
+            case "51": //>
+            case "52": //!=
+            case "53": //<=
+            case "54": //>=
+            case "55": //==
+            case "59": //+
+            case "60": //-
+            case "62": //*
+            case "63": // /
+            case "83": // )
+                // realizar accion en pila de Operadores
+                ban = Operadores(comp, lexema, nlinea);
+                if(ban == false)
+                    return false;
                 break;
         }
 // //////////////////////////////////////////////////////////
@@ -377,6 +402,75 @@ public class Principal extends javax.swing.JFrame {
         }
     }
     
+    private boolean Operadores(String comp, String lexema, String nlinea)
+    {
+        String simboloOp;
+        if(!pilaOperadores.isEmpty()){ //si esta vacia soo inserta el componente
+            if(comp.equals("(")){ //solo ingresa el ( a la pila
+                pilaOperadores.push(comp);
+                //System.out.println("pila" + pilaOperadores);
+                return true;
+            }
+            if(comp.equals(")")){ //si se hay un ) se realiza operaciones hsat encontrar ( en pila
+               while(!pilaOperadores.peek().equals("(")){
+                    expPosfija+=pilaOperadores.peek();
+                    //System.out.println("posfija " + expPosfija);
+                    simboloOp = pilaOperadores.pop();
+                }
+                pilaOperadores.pop();
+                //System.out.println("pila 2" + pilaOperadores);
+                return true;
+            }
+            if(comp.equals("==")||comp.equals("!=")||comp.equals("<=")||comp.equals(">=")||comp.equals("<")||comp.equals(">")){
+                //realiza todas las operaciones que hayan antes de una relacional
+                while(!pilaOperadores.isEmpty() && !opRelacionales.contains(pilaOperadores.peek())){
+                    expPosfija+=pilaOperadores.peek();
+                    //System.out.println("posfija " + expPosfija);
+                    simboloOp = pilaOperadores.pop();
+                }
+                pilaOperadores.push(comp);
+                //System.out.println("pila" + pilaOperadores);
+                return true;
+            }else if(comp.equals("+")||comp.equals("-")){
+                // si hay un + o - busca en la pila si hay un simbolo de mayor o igual importancia o si llega al final
+                while(!pilaOperadores.isEmpty() && !opRelacionales.contains(pilaOperadores.peek())){
+                    expPosfija+=pilaOperadores.peek();
+                    //System.out.println("posfija " + expPosfija);
+                    simboloOp = pilaOperadores.pop();
+                }
+                pilaOperadores.push(comp);
+                //System.out.println("pila" + pilaOperadores);
+                return true;
+            }else if(comp.equals("*") || comp.equals("/")){
+                // si hay un * o / busca en la pila si hay un simbolo de mayor o igual importancia o si llega al final
+                while(!pilaOperadores.isEmpty() && (!pilaOperadores.peek().equals("-")&&!pilaOperadores.peek().equals("+")&&!opRelacionales.contains(pilaOperadores.peek()))){
+                    expPosfija+=pilaOperadores.peek() + " ";
+                    //System.out.println("posfija " + expPosfija);
+                    simboloOp = pilaOperadores.pop();
+                }
+                pilaOperadores.push(comp);
+                //System.out.println("pila" + pilaOperadores);
+                return true;
+            }
+        }else{
+            pilaOperadores.push(comp);
+            //System.out.println("pila" + pilaOperadores);
+            return true;
+        }
+        return true;
+    }
+    
+    private void FinExpresion()
+    {
+        String simboloOp;
+        while(!pilaOperadores.isEmpty()){
+            expPosfija+=pilaOperadores.peek();
+            //System.out.println("pila" + pilaOperadores);
+            //System.out.println("posfija " + expPosfija);
+            simboloOp = pilaOperadores.pop();
+        }
+    }
+    
     private void Error(int estado, String lexema, String nlinea)
     {
         if(!lexema.equals(""))
@@ -394,7 +488,7 @@ public class Principal extends javax.swing.JFrame {
     private void InicializarPilas() {
         pila.clear();
         pila.push("$");
-        pila.push("I0");
+        pila.push("q0");
     }
 
     private void inicializar() {
@@ -753,6 +847,7 @@ public class Principal extends javax.swing.JFrame {
         tablaSimbolos.clear();
         res = "";
         err = "";
+        expPosfija = "";
         AnalisisLexico();
         interm.setText(intermedio);
         //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())
