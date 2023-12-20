@@ -1,4 +1,10 @@
 programa{
-   int x;
-   x = 2 - 2 + 1 * 2) / 2;
+int a, b;
+float c, d, e;
+switch(a)
+{
+case 1: c = d + e;
+break;
+default: c = b;
+}
 }
