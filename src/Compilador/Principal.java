@@ -1,3 +1,4 @@
+// Comentario
 package Compilador;
 
 import static Compilador.Tokens.ERROR;
