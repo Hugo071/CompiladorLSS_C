@@ -1,4 +1,3 @@
-// Revisar gramática y analizador léxico para componentes mI y MI
 package Compilador;
 
 import static Compilador.Tokens.ERROR;

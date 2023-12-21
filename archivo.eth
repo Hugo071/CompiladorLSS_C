@@ -1,10 +1,14 @@
-programa{
+programa {
 int a, b;
-float c, d, e;
-switch(a)
-{
-case 1: c = d + e;
-break;
-default: c = b;
+float c;
+a = scan();
+b = 4;
+switch (a) {
+case 1: c = b + 2 * a / 10; break;
+case 2: c = a - 3 * b / 5; break;
+default: c = a + b;
 }
-}
+do {
+c = c * 2;
+} while (c < 100);
+print(c);
