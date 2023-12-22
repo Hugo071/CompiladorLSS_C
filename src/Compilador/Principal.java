@@ -24,6 +24,7 @@ import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class Principal extends javax.swing.JFrame {
+    String scan = "";
     NumeroLinea numerolinea2;
     HerramientaArchivo archivo;
     UndoManager manager;
@@ -38,7 +39,15 @@ public class Principal extends javax.swing.JFrame {
     public String componente; 
     Stack<String> pilaOperadores = new Stack();
     Stack<String> pilaSemantica = new Stack();
-    String expPosfija = "", intermedio, vAsig, estadoAntSw;
+    String expPosfija = "", intermedio, vAsig, estadoAntSw = "";
+    
+    public boolean[][] tablaRelacional = 
+    {
+        {true, true, false, false},
+        {true, true, false, false},
+        {false, false, false, false},
+        {false, false, false, false}
+    };
     public String[][] tablaTipos = 
     {
         {"0", "1", "-1", "-1"},
@@ -319,6 +328,9 @@ public class Principal extends javax.swing.JFrame {
                 if(ban == false)
                     return false;
                 break;
+            case "42"://scan
+                scan = "1";
+                break;
             case "48":
                 ban = FinExpresion(nlinea);
                 if(ban == false)
@@ -561,9 +573,13 @@ public class Principal extends javax.swing.JFrame {
             if(ban == false)
                 return false;
         }
-        ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
-        if(ban == false)
-            return false;
+        if (!scan.equals("1")) {
+            ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
+            if(ban == false)
+                return false;
+        }else{
+            scan = "";
+        }
         return true;
     }
     
@@ -646,6 +662,8 @@ public class Principal extends javax.swing.JFrame {
         pila.clear();
         pila.push("$");
         pila.push("q0");
+        pilaOperadores.clear();
+        pilaSemantica.clear();
     }
 
     private void inicializar() {
