@@ -1,15 +1,11 @@
 programa {
-int a, b;
+int a;
 float c;
-a = scan();
-b = 4;
-switch (a) {
-case 1: c = b + 2 * a / 10; break;
-case 2: c = a - 3 * b / 5; break;
-default: c = a + b;
-}
+char b;
+boolean f;
+f = 4 !=10;
 do {
-c = c * 2;
-} while (c < 100);
+c = a * 2;
+} while (a <  1);
 print(c);
 }

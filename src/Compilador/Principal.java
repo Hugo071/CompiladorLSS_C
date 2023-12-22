@@ -45,15 +45,31 @@ public class Principal extends javax.swing.JFrame {
     {
         {true, true, false, false},
         {true, true, false, false},
-        {false, false, false, false},
+        {false, false, true, false},
         {false, false, false, false}
     };
     public String[][] tablaTipos = 
     {
         {"0", "1", "-1", "-1"},
         {"1", "1", "-1", "-1"},
-        {"-1","-1", "2", "-1"},
-        {"-1", "-1", "-1", "3"}
+        {"-1","-1", "-1", "-1"},
+        {"-1", "-1", "-1", "-1"}
+    };
+    
+    public String[][] tablaTiposOp1 = 
+    {
+        {"2",	"2",	"-1",	"-1"},
+        {"2",	"2",	"-1",	"-1"},
+        {"-1",	"-1",	"-1",	"-1"},
+        {"-1",	"-1",	"-1",	"-1"}
+    };
+    
+   public String[][] tablaTiposOp2 = 
+    {
+        {"2",	"2",	"-1",	"2"},
+        {"2",	"2",	"-1",	"-1"},
+        {"-1",	"-1",	"2",	"-1"},
+        {"-1",	"-1",	"-1",	"2",}
     };
     public boolean[][] tablaAsigTipo = 
     {
@@ -332,7 +348,7 @@ public class Principal extends javax.swing.JFrame {
                 scan = "1";
                 break;
             case "48":
-                ban = FinExpresion(nlinea);
+                ban = FinExpresion(lexema, nlinea);
                 if(ban == false)
                     return false;
                 expPosfija = "";
@@ -358,6 +374,18 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "95": // estado anterior al id-num-vchar-true-false que se coloca despues del case en el sw (case 1: ejemplo)
                 estadoAntSw = "95";
+                break;
+            case "29": // Expresiones Relacional
+            case "64":
+            case "45":
+            case "102":
+                //ExpresionRelacional();
+                break;
+            case "106": // ) do while
+                ban = FinExpresion(lexema, nlinea);
+                if(ban == false)
+                    return false;
+                expPosfija = "";
                 break;
         }
 // //////////////////////////////////////////////////////////
@@ -491,17 +519,37 @@ public class Principal extends javax.swing.JFrame {
                 return true;
             }
             if(comp.equals(")")){ //si se hay un ) se realiza operaciones hsat encontrar ( en pila
-               while(!pilaOperadores.peek().equals("(")){
+               while(!pilaOperadores.peek().equals("("))
+               {
                     expPosfija+=pilaOperadores.peek();
-                    //System.out.println("posfija " + expPosfija);
-                    simboloOp = pilaOperadores.pop();
-                    ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
-                    if(ban == false)
-                            return false;
-                }
-                pilaOperadores.pop();
+                    if(pilaOperadores.size() >= 2 && pilaSemantica.size() >= 2)
+                    {
+                        if(pilaOperadores.peek().equals("<") || pilaOperadores.peek().equals(">") || pilaOperadores.peek().equals("<=") || pilaOperadores.peek().equals(">="))
+                        {
+                            estadoAntSw = "1";
+                            ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                                if(ban == false)
+                                    return false;
+                        }
+                        else if(pilaOperadores.peek().equals("==") || pilaOperadores.peek().equals("!="))
+                        {
+                            estadoAntSw = "2";
+                            ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                                if(ban == false)
+                                    return false;
+                        }
+                        else
+                        {
+                            ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                            if(ban == false)
+                                return false;
+                        }
+                        simboloOp = pilaOperadores.pop();
+                    }
+               }
+               //simboloOp = pilaOperadores.pop();
+               return true;
                 //System.out.println("pila 2" + pilaOperadores);
-                return true;
             }
             switch (comp) {
                 case "==":
@@ -561,55 +609,146 @@ public class Principal extends javax.swing.JFrame {
         return true;
     }
     
-    private boolean FinExpresion(String nlinea)
+    private boolean FinExpresion(String lexema, String nlinea)
     {
         String simboloOp;
-        while(!pilaOperadores.isEmpty()){
-            expPosfija+=pilaOperadores.peek();
-            //System.out.println("pila" + pilaOperadores);
-            //System.out.println("posfija " + expPosfija);
-            simboloOp = pilaOperadores.pop();
-            ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
-            if(ban == false)
-                return false;
+        if(lexema.equals(";"))
+        {
+            while(!pilaOperadores.isEmpty()){
+                expPosfija+=pilaOperadores.peek();
+                //System.out.println("pila" + pilaOperadores);
+                //System.out.println("posfija " + expPosfija);
+                if(pilaOperadores.size() == 1 && pilaSemantica.size() == 2)
+                {
+                    if(pilaOperadores.peek().equals("<") || pilaOperadores.peek().equals(">") || pilaOperadores.peek().equals("<=") || pilaOperadores.peek().equals(">="))
+                    {
+                        estadoAntSw = "1";
+                        ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                            if(ban == false)
+                                return false;
+                    }
+                    else if(pilaOperadores.peek().equals("==") || pilaOperadores.peek().equals("!="))
+                    {
+                        estadoAntSw = "2";
+                        ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                            if(ban == false)
+                                return false;
+                    }
+                    else
+                    {
+                        ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                        if(ban == false)
+                            return false;
+                    }
+                }
+                simboloOp = pilaOperadores.pop();
+            }
+            if (!scan.equals("1")) 
+            {
+                ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
+                if(ban == false)
+                    return false;
+            }
+            else
+                scan = "";
         }
-        if (!scan.equals("1")) {
-            ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
-            if(ban == false)
-                return false;
-        }else{
-            scan = "";
+        else if(lexema.equals(")"))
+        {
+            // ) del do while
+            while(pilaOperadores.size() != 1){
+                expPosfija+=pilaOperadores.peek();
+                //System.out.println("pila" + pilaOperadores);
+                //System.out.println("posfija " + expPosfija);
+                simboloOp = pilaOperadores.pop();
+                ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                if(ban == false)
+                    return false;
+            }
+            if(pilaSemantica.size() == 2)
+            {
+                if(pilaOperadores.peek().equals("<") || pilaOperadores.peek().equals(">") || pilaOperadores.peek().equals("<=") || pilaOperadores.peek().equals(">="))
+                {
+                    estadoAntSw = "1";
+                    ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                        if(ban == false)
+                            return false;
+                }
+                else if(pilaOperadores.peek().equals("==") || pilaOperadores.peek().equals("!="))
+                {
+                    estadoAntSw = "2";
+                    ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
+                        if(ban == false)
+                            return false;
+                }
+            }
         }
         return true;
     }
     
     private boolean SemanticoOp(String nlinea)
     {
-        if(pilaSemantica.size() >= 2)
+        String n2, n1, resu;
+        switch(estadoAntSw)
         {
-            String n2, n1, resu;
-            n2 = pilaSemantica.pop();
-            n1 = pilaSemantica.pop();
-            resu = tablaTipos[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
-            if(!resu.equals("-1"))
-                pilaSemantica.push(resu);
-            else
-            {
-                err += "Error semantico en linea " + nlinea + " error de tipo \n";
-                errores.setText(err);
-                res+="La cadena no se acepta...";
-                sintactico.setText(res);
-                return false;
-            }
-        }
-        else
-        {
-            err += "Error semantico en linea " + nlinea + " faltan operandos \n";
-            errores.setText(err);
-            res+="La cadena no se acepta...";
-            sintactico.setText(res);
-            return false;
-        }
+            case "1":
+                    n2 = pilaSemantica.pop();
+                    n1 = pilaSemantica.pop();
+                    resu = tablaTiposOp1[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
+                    if(!resu.equals("-1"))
+                        pilaSemantica.push(resu);
+                    else
+                    {
+                        err += "Error semantico en linea " + nlinea + " tipos de dato no compatibles \n";
+                        errores.setText(err);
+                        res+="La cadena no se acepta...";
+                        sintactico.setText(res);
+                        return false;
+                    }
+                    estadoAntSw = "";
+                break;
+                case "2":
+                    n2 = pilaSemantica.pop();
+                    n1 = pilaSemantica.pop();
+                    resu = tablaTiposOp2[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
+                    if(!resu.equals("-1"))
+                        pilaSemantica.push(resu);
+                    else
+                    {
+                        err += "Error semantico en linea " + nlinea + " tipos de dato no compatibles \n";
+                        errores.setText(err);
+                        res+="La cadena no se acepta...";
+                        sintactico.setText(res);
+                        return false;
+                    }
+                    estadoAntSw = "";
+                break;
+            default:
+                    if(pilaSemantica.size() >= 2)
+                    {
+                        n2 = pilaSemantica.pop();
+                        n1 = pilaSemantica.pop();
+                        resu = tablaTipos[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
+                        if(!resu.equals("-1"))
+                            pilaSemantica.push(resu);
+                        else
+                        {
+                            err += "Error semantico en linea " + nlinea + " error de tipo \n";
+                            errores.setText(err);
+                            res+="La cadena no se acepta...";
+                            sintactico.setText(res);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        err += "Error semantico en linea " + nlinea + " faltan operandos \n";
+                        errores.setText(err);
+                        res+="La cadena no se acepta...";
+                        sintactico.setText(res);
+                        return false;
+                    }
+            break;
+}
         return true;
     }
     
@@ -619,7 +758,7 @@ public class Principal extends javax.swing.JFrame {
         switch(estadoAntSw)
         {
             case "95":
-                resu = tablaAsigTipo[tipoSwitch][Integer.parseInt(pilaSemantica.peek())];
+                resu = tablaAsigTipo[tipoSwitch][Integer.parseInt(pilaSemantica.pop())];
                 if(!resu)
                 {
                     err += "Error semantico en linea " + nlinea + " error de tipo en el case \n";
@@ -631,7 +770,7 @@ public class Principal extends javax.swing.JFrame {
                 estadoAntSw = "";
                 break;
             default:
-                resu = tablaAsigTipo[tipoAsig][Integer.parseInt(pilaSemantica.peek())];
+                resu = tablaAsigTipo[tipoAsig][Integer.parseInt(pilaSemantica.pop())];
                 if(!resu)
                 {
                     err += "Error semantico en linea " + nlinea + " error de tipo en la asignación \n";
