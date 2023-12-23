@@ -71,8 +71,8 @@ comentario = {comentarioTradicional} | {finDeLineaComentario} | {comentarioDeDoc
 letra = [a-zA-ZñÑ_$á-źÁ-Ź]
 digito = [0-9]
 espacio = [ ]+
-caracter = \'(\\.|[^\'\\])?\'
-carinc = \'(\\.|[^\'\\])?
+cadena = \"(\\.|[^\"\\])*\"
+cadinc = \"(\\.|[^\"\\])*
 flotante = (-?[1-9][0-9]*\.[0-9]*[1-9])|(0\.0)|(-?[1-9][0-9]*\.0)|(-?[1-9][0-9]*\.[0-9]*[1-9][eE][-+][1-9][0-9]*)|(-?0\.[0-9]*[1-9][eE][-+][1-9][0-9]*)
 entero = (0|-?[1-9][0-9]*)
 num = {entero} | {flotante}
@@ -89,9 +89,8 @@ programa {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = n
 int {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"int",yyline); return Entero;}
 default {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"default",yyline); return Default;}
 float {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"float",yyline); return Float;}
-char {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"char",yyline); return Char;}
 boolean {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"boolean",yyline); return Boolean;}
-char {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"char",yyline); return Char;}
+String {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"String",yyline); return String;}
 true {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"true",yyline); return True;}
 false {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"false",yyline); return False;}
 switch {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"switch",yyline); return Switch;}
@@ -120,6 +119,6 @@ scan {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new T
 ">=" {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"#",yyline); return MI;}
 "==" {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"==",yyline); return DobleIgual;}
 {id} {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"id",yyline); tablaSimbolos.put(yytext(),t1); return id;}
-{caracter} {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"vchar",yyline); return vchar;}
+{cadena} {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); Token t1 = new Token(yytext(),"litstring",yyline); return litstring;}
  . {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); return ERROR;}
-   {carinc} {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); return ERROR;} 
+   {cadinc} {t.numeroLinea=yyline; t.lexema=yytext(); lexeme=yytext(); return ERROR;} 
