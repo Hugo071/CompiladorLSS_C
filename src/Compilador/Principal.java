@@ -193,7 +193,7 @@ public class Principal extends javax.swing.JFrame {
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""},
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P45",	"P45",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""}
     };
-    String res, err;
+    String res, err, codigoObjeto;
     boolean ban=true;
     int tipo = -1;
     int tipoAsig = -1, tipoSwitch = -1;
@@ -218,12 +218,15 @@ public class Principal extends javax.swing.JFrame {
             lexer = new Lexer(entrada);
             infoToken = new InfoTokens();
             String resu = "";
+            InicioCodigo();
             while (true) {
                 Tokens token = lexer.yylex();
                 if (token == null) {
                     AnalisisSintactico("$", "", (infoToken.numeroLinea + 1) + "");
                     resu += "";
                     lexico.setText(resu);
+                    FinCodigo();
+                    System.out.println(codigoObjeto);
                     return;
                 }
                 switch (token) {
@@ -441,8 +444,10 @@ public class Principal extends javax.swing.JFrame {
     
     private boolean RegistrarID(String lexema, String nlinea)
     {
-        if(tablaSimbolos.get(lexema) == null && tipo != -1)
+        if(tablaSimbolos.get(lexema) == null && tipo != -1){
             tablaSimbolos.put(lexema, tipo);
+            ExpresionCodigo(lexema);
+        }
         else
         {
             err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " ya existe" + "\n";
@@ -618,7 +623,7 @@ public class Principal extends javax.swing.JFrame {
                 expPosfija+=pilaOperadores.peek();
                 //System.out.println("pila" + pilaOperadores);
                 //System.out.println("posfija " + expPosfija);
-                if(pilaOperadores.size() == 1 && pilaSemantica.size() == 2)
+                if(pilaOperadores.size() >= 1 && pilaSemantica.size() >= 2)
                 {
                     if(pilaOperadores.peek().equals("<") || pilaOperadores.peek().equals(">") || pilaOperadores.peek().equals("<=") || pilaOperadores.peek().equals(">="))
                     {
@@ -706,7 +711,7 @@ public class Principal extends javax.swing.JFrame {
                     }
                     estadoAntSw = "";
                 break;
-                case "2":
+            case "2":
                     n2 = pilaSemantica.pop();
                     n1 = pilaSemantica.pop();
                     resu = tablaTiposOp2[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
@@ -781,6 +786,40 @@ public class Principal extends javax.swing.JFrame {
                 }  
         }
         return true;
+    }
+    
+    public void InicioCodigo()
+    {
+        codigoObjeto += "#include <stdio.h>\n#include<stdbool.h>\n\nint main()\n{\n";
+        interm.setText(codigoObjeto);
+    }
+    
+    public void ExpresionCodigo(String lexema)
+    {
+        switch(tipo){
+            case 0:
+                codigoObjeto += "\tint "+lexema+";\n";
+                interm.setText(codigoObjeto);
+                break;
+            case 1:
+                codigoObjeto += "\tfloat "+lexema+";\n";
+                interm.setText(codigoObjeto);
+                break;
+            case 2:
+                codigoObjeto += "\tchar "+lexema+";\n";
+                interm.setText(codigoObjeto);
+                break;
+            case 3:
+                codigoObjeto += "\tbool "+lexema+";\n";
+                interm.setText(codigoObjeto);
+                break;
+        }
+    }
+    
+    public void FinCodigo()
+    {
+        codigoObjeto += "}"; 
+        interm.setText(codigoObjeto);
     }
     
     private void Error(int estado, String lexema, String nlinea)
@@ -1162,6 +1201,7 @@ public class Principal extends javax.swing.JFrame {
         res = "";
         err = "";
         expPosfija = "";
+        codigoObjeto = "";
         AnalisisLexico();
         interm.setText(intermedio);
         //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())
