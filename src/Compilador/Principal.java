@@ -552,7 +552,7 @@ public class Principal extends javax.swing.JFrame {
                         simboloOp = pilaOperadores.pop();
                     }
                }
-               //simboloOp = pilaOperadores.pop();
+               simboloOp = pilaOperadores.pop();
                return true;
                 //System.out.println("pila 2" + pilaOperadores);
             }
