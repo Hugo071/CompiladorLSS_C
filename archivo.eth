@@ -1,14 +1,4 @@
 programa {
-int a;
-float b;
-String c;
-boolean d;
-d = true;
-d = false;
-a = scan();
-b = scan();
-c = scan();
-d = scan();
-c = "Hola mundo";
-a = (10 * 2 + 6);
+String a;
+print("Hola mundo");
 }
