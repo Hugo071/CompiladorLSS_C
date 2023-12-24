@@ -193,9 +193,9 @@ public class Principal extends javax.swing.JFrame {
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""},
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P45",	"P45",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""}
     };
-    String res, err, codigoObjeto;
+    String res, err, codigoObjeto, var;
     boolean ban=true;
-    int tipo = -1;
+    int tipo = -1, puntero = 0;
     int tipoAsig = -1, tipoSwitch = -1;
 
     public Principal() {
@@ -344,12 +344,27 @@ public class Principal extends javax.swing.JFrame {
             case "40":// true
             case "41":// false
                 // Para identificadores, verificar si el id existe, si es asi, insertar su tipo de dato en la pila semantica.
-                ban = PushPilaSem(estado, lexema, nlinea);
+                ban = PushPilaSem(estado, lexema, nlinea, vAsig);
                 if(ban == false)
                     return false;
                 break;
             case "42"://scan
                 scan = "1";
+                switch(tablaSimbolos.get(vAsig))
+                {
+                    case 0://int 
+                        codigoObjeto += "  scanf(\"%d\"," + "&" + vAsig + ");\n";
+                        break;
+                    case 1:// float
+                         codigoObjeto += "  scanf(\"%f\"," + "&" + vAsig + ");\n";
+                        break;
+                    case 2:// boolean
+                         codigoObjeto += "  scanf(\"%f\"," + "&" + vAsig + ");\n";
+                        break;
+                    case 3:// String
+                         codigoObjeto += "  scanf(\"%s\"," + "" + vAsig + ");\n";
+                        break;
+                }
                 break;
             case "48":
                 ban = FinExpresion(lexema, nlinea);
@@ -480,7 +495,7 @@ public class Principal extends javax.swing.JFrame {
         return true;
     }
     
-    private boolean PushPilaSem(String estado, String lexema, String nlinea)
+    private boolean PushPilaSem(String estado, String lexema, String nlinea, String vAsig)
     {
         switch (estado) 
         {
@@ -511,14 +526,17 @@ public class Principal extends javax.swing.JFrame {
                     expPosfija += lexema + " ";
                 }
                 break;
-            case "38": // char
+            case "38": // String
                 pilaSemantica.push("3");
-                expPosfija += lexema + " ";
+                codigoObjeto += "  strcpy(" + vAsig + ", " + lexema + ");\n";
                 break;
             case "40":
             case "41": // boolean
                 pilaSemantica.push("2");
-                expPosfija += lexema + " ";
+                if(lexema.equals("true"))
+                    expPosfija += "1.00";
+                else
+                    expPosfija += "0.00";
         }
         if(estadoAntSw.equals("95"))
         {
@@ -567,7 +585,6 @@ public class Principal extends javax.swing.JFrame {
                         simboloOp = pilaOperadores.pop();
                     }
                }
-               expPosfija+=pilaOperadores.peek() + " ";
                simboloOp = pilaOperadores.pop();
                return true;
                 //System.out.println("pila 2" + pilaOperadores);
@@ -807,7 +824,7 @@ public class Principal extends javax.swing.JFrame {
     
     public void InicioCodigo()
     {
-        codigoObjeto += "#include <stdio.h>\n#include<stdbool.h>\n\nint main()\n{\n";
+        codigoObjeto += "#include <stdio.h>\n#include<stdbool.h>\n#include<string.h>\n\nint main()\n{\n";
         interm.setText(codigoObjeto);
     }
     
@@ -823,7 +840,7 @@ public class Principal extends javax.swing.JFrame {
                 interm.setText(codigoObjeto);
                 break;
             case 2:
-                codigoObjeto += "  bool "+lexema+";\n";
+                codigoObjeto += "  float "+lexema+";\n";
                 interm.setText(codigoObjeto);
                 break;
             case 3:
@@ -842,8 +859,24 @@ public class Principal extends javax.swing.JFrame {
         {
             if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
             {
-                codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
-                con++;
+                if(puntero < con)
+                {
+                    if(!expPosfija.isEmpty())
+                    {
+                        codigoObjeto += "  float V" + con + " = " + pos[i]+";" + "\n";
+                        puntero = con;
+                        con++;
+                    }
+                }
+                else
+                {
+                    if(!expPosfija.isEmpty())
+                    {
+                        codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
+                        puntero = con;
+                        con++;
+                    }
+                }
             }
             else
             {
@@ -852,7 +885,8 @@ public class Principal extends javax.swing.JFrame {
                 con++;
             }
         }
-        codigoObjeto += "  " + asig + " = " + "V" + (con-1)+";";
+        if(!expPosfija.isEmpty())
+            codigoObjeto += "  " + asig + " = " + "  V" + (con-1)+";\n";
     }
     
     public void FinCodigo()
