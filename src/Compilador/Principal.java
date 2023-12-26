@@ -752,6 +752,9 @@ public class Principal extends javax.swing.JFrame {
                             ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                                 if(ban == false)
                                     return false;
+                           estadoSOP = "";
+                            CodInt(expPosfija, "while");
+                           return true;
                         }
                         else if(simboloOp.equals("==") || simboloOp.equals("!="))
                         {
@@ -759,6 +762,9 @@ public class Principal extends javax.swing.JFrame {
                             ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                                 if(ban == false)
                                     return false;
+                            estadoSOP = "";
+                            CodInt(expPosfija, "while");
+                            return true;
                         }
                     }
                     else
@@ -797,7 +803,6 @@ public class Principal extends javax.swing.JFrame {
                         sintactico.setText(res);
                         return false;
                     }
-                    estadoSOP = "";
                 break;
             case "2":
                     n2 = pilaSemantica.pop();
@@ -813,7 +818,6 @@ public class Principal extends javax.swing.JFrame {
                         sintactico.setText(res);
                         return false;
                     }
-                    estadoSOP = "";
                 break;
             default:
                     if(pilaSemantica.size() >= 2)
@@ -874,7 +878,7 @@ public class Principal extends javax.swing.JFrame {
                             estadoAntSw = "";
                             break;
                         case "1":// float
-                             codigoObjeto += "\"%f\\n\", "+expInfija+");\n";
+                            codigoObjeto += "\"%f\\n\", "+expInfija+");\n";
                             expInfija = "";
                             estadoAntSw = "";
                             break;
@@ -942,6 +946,30 @@ public class Principal extends javax.swing.JFrame {
         int conSt = 1;
         for(int i = 0; i<pos.length; i++)
         {
+            if(asig.equals("while"))
+            {
+                if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
+                {
+                    if(puntero < con)
+                        {
+                            if(!expPosfija.isEmpty())
+                            {
+                                codigoObjeto += "  float V" + con + " = " + pos[i]+";" + "\n";
+                                puntero = con;
+                                con++;
+                            }
+                        }
+                        else
+                        {
+                            if(!expPosfija.isEmpty())
+                            {
+                                codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
+                                //puntero = con;
+                                con++;
+                            }
+                        }
+                    }
+            }
             if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
             {
                 if(compCadenaBand == true)
