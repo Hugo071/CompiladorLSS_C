@@ -753,7 +753,7 @@ public class Principal extends javax.swing.JFrame {
                                 if(ban == false)
                                     return false;
                            estadoSOP = "";
-                            CodInt(expPosfija, "while");
+                            CodIntDW(expPosfija, "while");
                            return true;
                         }
                         else if(simboloOp.equals("==") || simboloOp.equals("!="))
@@ -763,7 +763,7 @@ public class Principal extends javax.swing.JFrame {
                                 if(ban == false)
                                     return false;
                             estadoSOP = "";
-                            CodInt(expPosfija, "while");
+                            CodIntDW(expPosfija, "while");
                             return true;
                         }
                     }
@@ -938,6 +938,51 @@ public class Principal extends javax.swing.JFrame {
         }
     }
     
+    private void CodIntDW(String exp, String asig)
+    {
+        puntero = 0;
+        String pos[] = exp.split(" ");
+        int con = 1;
+        int conSt = 1;
+        for(int i = 0; i<pos.length; i++)
+        {
+            if(asig.equals("while"))
+                {
+                    for(i = 0; i<pos.length; i++)
+                    {
+                        if(!pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
+                        {
+                            if(puntero < con)
+                                {
+                                    if(!expPosfija.isEmpty())
+                                    {
+                                        codigoObjeto += "  float VDW" + con + " = " + pos[i]+";" + "\n";
+                                        puntero = con;
+                                        con++;
+                                    }
+                                }
+                                else
+                                {
+                                    if(!expPosfija.isEmpty())
+                                    {
+                                        codigoObjeto += "  VDW" + con + " = " + pos[i]+";" + "\n";
+                                        //puntero = con;
+                                        con++;
+                                    }
+                                }
+                            }
+                        else
+                        {
+                            con-=2;
+                            codigoObjeto += "  VDW" + con + " = " + "VDW" + con + pos[i] + "VDW" + (con+1) + ";\n";
+                            codigoObjeto += "  if("+"VDW"+con+")";
+                            con++;
+                        }
+                    }
+                }
+        }
+    }
+    
     private void CodInt(String exp, String asig)
     {
         System.out.println(expPosfija + "\n");
@@ -946,30 +991,6 @@ public class Principal extends javax.swing.JFrame {
         int conSt = 1;
         for(int i = 0; i<pos.length; i++)
         {
-            if(asig.equals("while"))
-            {
-                if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
-                {
-                    if(puntero < con)
-                        {
-                            if(!expPosfija.isEmpty())
-                            {
-                                codigoObjeto += "  float V" + con + " = " + pos[i]+";" + "\n";
-                                puntero = con;
-                                con++;
-                            }
-                        }
-                        else
-                        {
-                            if(!expPosfija.isEmpty())
-                            {
-                                codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
-                                //puntero = con;
-                                con++;
-                            }
-                        }
-                    }
-            }
             if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
             {
                 if(compCadenaBand == true)
@@ -1045,7 +1066,7 @@ public class Principal extends javax.swing.JFrame {
     
     public void FinCodigo()
     {
-        codigoObjeto += "\n}"; 
+        codigoObjeto += "  return 0;\n}"; 
         interm.setText(codigoObjeto);
     }
     

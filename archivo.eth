@@ -1,9 +1,19 @@
-programa {
-float d;
-do{
-     d = 5.5 +10.5;
+programa
+{
+int a;
+int b;
+a = 1;
+b = 1;
+do
+{
+do
+{
+print(a);
+a = a + 1;
 }
-while( d < 11.5);
-print("Ingresa un flotante");
-d = scan();
+while(a<=10);
+print(b);
+b = b + 1;
+}
+while(b<=10);
 }
