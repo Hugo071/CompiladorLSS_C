@@ -1,4 +1,54 @@
 programa {
 String a;
+int x;
+float y;
+boolean b, d;
+x = 5+3;
+print(x);
 print("Hola mundo");
+print(3+4+(4*(2)));
+print(4.3);
+print((42)+(4*(3/2)));
+x = 5+3;
+print(x);
+b = "S"!="S2";
+print(b);
+a = "ad";
+print(a);
+d = a=="D";
+print(d);
+x = 4 + 3;
+print(x);
+a = "Sas";
+print(a);
+x = 5 + 20;
+print(x);
+y = x - 2 + 23 - (23-x) / 2;
+print(y);
+x = x - 2 + 23 - (23-x);
+print(x+(3+2*(31)));
+print("Escibe una cadena");
+a = scan();
+print("Escribe un numero entero");
+x = scan();
+print("Escribe un flotante");
+y = scan();
+print("Ingresa un booleano");
+d = scan();
+switch(x){
+ case 1: x = 4;
+  break;
+  default: x = 5;
+}
+do{
+do{
+x = 5;
+}
+while(3 * 4 + 2 < 1 / (2 - 3) );
+}
+while(3 * 4 + 2 < 1 / (2 - 3) );
+do{
+x = 5;
+}
+while(3 * 4 + 2 < 1 / (2 - 3) );
 }

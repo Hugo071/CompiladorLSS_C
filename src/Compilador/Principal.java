@@ -193,10 +193,13 @@ public class Principal extends javax.swing.JFrame {
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P46",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""},
 {"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"P45",	"P45",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	"",	""}
     };
-    String res, err, codigoObjeto = "", var;
+    String res, err, codigoObjeto = "", var, doWhile;
     boolean ban=true;
     int tipo = -1, puntero = 0, cont = 0;
     int tipoAsig = -1, tipoSwitch = -1;
+    boolean compCadenaBand = false, bandDoWhile = false;
+    int punteroSt = 0, punteroDoWhile = 0;
+    public Stack<Integer> pilaDoWhile = new Stack();
 
     public Principal() {
         this.manager = new UndoManager();
@@ -326,7 +329,9 @@ public class Principal extends javax.swing.JFrame {
                 
                 break;
             case "17": // Do
-                
+                punteroDoWhile++;
+                codigoObjeto += " do"+punteroDoWhile+":\n";
+                pilaDoWhile.add(punteroDoWhile);
                 break;
             case "18": // Print
                 codigoObjeto += "  printf(";
@@ -390,6 +395,7 @@ public class Principal extends javax.swing.JFrame {
                 ban = FinExpresion(lexema, nlinea);
                 if(ban == false)
                     return false;
+                compCadenaBand = false;
                 expPosfija = "";
                 break;
             case "32": //+
@@ -426,6 +432,10 @@ public class Principal extends javax.swing.JFrame {
                     return false;
                 expPosfija = "";
                 break;
+            case "108": //Fin de do while
+                codigoObjeto += " goto do"+pilaDoWhile.peek()+";\n";
+                pilaDoWhile.pop();
+                break;
         }
 // //////////////////////////////////////////////////////////
         return true;
@@ -460,7 +470,8 @@ public class Principal extends javax.swing.JFrame {
             cont++;
             if(cont >= 2)
             {
-                expInfija += ")";
+                //expInfija += ")";
+                expInfija += "";
                 cont-=2;
             }
         }
@@ -557,8 +568,13 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "38": // String
                 pilaSemantica.push("3");
-                if(!estadoAntSw.equals("45"))
-                    codigoObjeto += "  strcpy(" + vAsig + ", " + lexema + ");\n";
+                if(tipoAsig==2){
+                    compCadenaBand = true;
+                    expPosfija += lexema + " ";
+                }else{
+                    if(!estadoAntSw.equals("45"))
+                        codigoObjeto += "  strcpy(" + vAsig + ", " + lexema + ");\n";
+                }
                 break;
             case "40":
             case "41": // boolean
@@ -853,22 +869,22 @@ public class Principal extends javax.swing.JFrame {
                     switch(tipo)
                     {
                         case "0"://int -
-                            codigoObjeto += "\"%d\\n\", "+expInfija+");";
+                            codigoObjeto += "\"%d\\n\", "+expInfija+");\n";
                             expInfija = "";
                             estadoAntSw = "";
                             break;
                         case "1":// float
-                             codigoObjeto += "\"%f\\n\", "+expInfija+");";
+                             codigoObjeto += "\"%f\\n\", "+expInfija+");\n";
                             expInfija = "";
                             estadoAntSw = "";
                             break;
                         case "2":// boolean
-                             codigoObjeto += "\"%d\\n\", "+expInfija+");";
+                             codigoObjeto += "\"%d\\n\", "+expInfija+");\n";
                             expInfija = "";
                             estadoAntSw = "";
                             break;
                         case "3":// String
-                            codigoObjeto += "\"%s\\n\", "+expInfija+");";
+                            codigoObjeto += "\"%s\\n\", "+expInfija+");\n";
                             expInfija = "";
                             estadoAntSw = "";
                             break;
@@ -892,7 +908,7 @@ public class Principal extends javax.swing.JFrame {
     
     public void InicioCodigo()
     {
-        codigoObjeto += "#include <stdio.h>\n#include<stdbool.h>\n#include<string.h>\n\nint main()\n{\n";
+        codigoObjeto += "#include <stdio.h>\n#include<string.h>\n\nint main()\n{\n";
         interm.setText(codigoObjeto);
     }
     
@@ -923,39 +939,81 @@ public class Principal extends javax.swing.JFrame {
         System.out.println(expPosfija + "\n");
         String pos[] = exp.split(" ");
         int con = 1;
+        int conSt = 1;
         for(int i = 0; i<pos.length; i++)
         {
             if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
             {
-                if(puntero < con)
+                if(compCadenaBand == true)
                 {
-                    if(!expPosfija.isEmpty())
+                    if(punteroSt < conSt)
                     {
-                        codigoObjeto += "  float V" + con + " = " + pos[i]+";" + "\n";
-                        puntero = con;
-                        con++;
+                        if(!expPosfija.isEmpty())
+                        {
+                            codigoObjeto += "  char VS"+conSt+"[256]" + " = " +pos[i]+";\n";
+                            punteroSt = conSt;
+                            conSt++;
+                        }
                     }
-                }
-                else
-                {
-                    if(!expPosfija.isEmpty())
+                    else
                     {
-                        codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
-                        puntero = con;
-                        con++;
+                        if(!expPosfija.isEmpty())
+                        {
+                            codigoObjeto += " strcpy(VS"+conSt+", "+pos[i]+")" +";\n";
+                            //puntero = con;
+                            conSt++;
+                        }
+                    }
+                }else{
+                    if(puntero < con)
+                    {
+                        if(!expPosfija.isEmpty())
+                        {
+                            codigoObjeto += "  float V" + con + " = " + pos[i]+";" + "\n";
+                            puntero = con;
+                            con++;
+                        }
+                    }
+                    else
+                    {
+                        if(!expPosfija.isEmpty())
+                        {
+                            codigoObjeto += "  V" + con + " = " + pos[i]+";" + "\n";
+                            //puntero = con;
+                            con++;
+                        }
                     }
                 }
             }
             else
-            {
-                con-=2;
-                codigoObjeto += "  V" + con + " = " + "V" + con + " " + pos[i] + " V" + (con+1)+";" + "\n";
-                con++;
+            {   
+                if(compCadenaBand == true)
+                {
+                    if(puntero < con)
+                    {
+                            codigoObjeto += "  float V" + con + " = strcmp(" + "VS" + (conSt-2) + " , " + " VS" + (conSt-1)+") == 0 ? 1 : 0;" + "\n";
+                            puntero = con;
+                            //con++;
+                    }else{
+                    //con-=2;
+                    //conSt=-2;
+                    codigoObjeto += "  V" + (con) + " = strcmp(" + "VS" + (conSt-2) + " , " + " VS" + (conSt-1)+") == 0 ? 1 : 0;" + "\n";
+                    //con++;
+                    //conSt++;
+                    }
+                }else{
+                    con-=2;
+                    codigoObjeto += "  V" + con + " = " + "V" + con + " " + pos[i] + " V" + (con+1)+";" + "\n";
+                    con++;
+                }
             }
         }
         if(!expPosfija.isEmpty())
-            codigoObjeto += "  " + asig + " = " + "  V" + (con-1)+";\n";
-    }
+            if(compCadenaBand == false)
+                codigoObjeto += "  " + asig + " = " + "  V" + (con-1)+";\n";
+            else
+                codigoObjeto += "  " + asig + " = " + "  V" + (con)+";\n";
+    }    
     
     public void FinCodigo()
     {
@@ -984,6 +1042,7 @@ public class Principal extends javax.swing.JFrame {
         pilaOperadores.clear();
         pilaSemantica.clear();
         puntero = 0;
+        punteroSt = 0;
         cont = 0;
     }
 
@@ -1346,6 +1405,9 @@ public class Principal extends javax.swing.JFrame {
         expPosfija = "";
         expInfija = "";
         codigoObjeto = "";
+        doWhile = "";
+        bandDoWhile = false;
+        punteroDoWhile = 0;
         AnalisisLexico();
         interm.setText(codigoObjeto);
         //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())
