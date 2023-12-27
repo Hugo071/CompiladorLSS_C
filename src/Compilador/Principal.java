@@ -195,9 +195,9 @@ public class Principal extends javax.swing.JFrame {
     };
     String res, err, codigoObjeto = "", var, doWhile;
     boolean ban=true;
-    int tipo = -1, puntero = 0, cont = 0;
+    int tipo = -1, puntero = 0, cont = 0, punterodw = 0;
     int tipoAsig = -1, tipoSwitch = -1;
-    boolean compCadenaBand = false, bandDoWhile = false;
+    boolean compCadenaBand = false, band = false;
     int punteroSt = 0, punteroDoWhile = 0;
     public Stack<Integer> pilaDoWhile = new Stack();
 
@@ -427,6 +427,8 @@ public class Principal extends javax.swing.JFrame {
                 //ExpresionRelacional();
                 break;*/
             case "106": // ) do while
+                band = true;
+                estadoAntSw = "106";
                 ban = FinExpresion(lexema, nlinea);
                 if(ban == false)
                     return false;
@@ -709,6 +711,7 @@ public class Principal extends javax.swing.JFrame {
                         ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                             if(ban == false)
                                 return false;
+                        estadoSOP = "";
                     }
                     else if(pilaOperadores.peek().equals("==") || pilaOperadores.peek().equals("!="))
                     {
@@ -716,9 +719,11 @@ public class Principal extends javax.swing.JFrame {
                         ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                             if(ban == false)
                                 return false;
+                        estadoSOP = "";
                     }
                     else
                     {
+                        estadoSOP = "";
                         ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                         if(ban == false)
                             return false;
@@ -753,7 +758,7 @@ public class Principal extends javax.swing.JFrame {
                                 if(ban == false)
                                     return false;
                            estadoSOP = "";
-                            CodIntDW(expPosfija, "while");
+                            CodIntDW(expPosfija, "");
                            return true;
                         }
                         else if(simboloOp.equals("==") || simboloOp.equals("!="))
@@ -763,12 +768,13 @@ public class Principal extends javax.swing.JFrame {
                                 if(ban == false)
                                     return false;
                             estadoSOP = "";
-                            CodIntDW(expPosfija, "while");
+                            CodIntDW(expPosfija, "");
                             return true;
                         }
                     }
                     else
                     {
+                        estadoSOP = "";
                         ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                         if(ban == false)
                             return false;
@@ -776,6 +782,8 @@ public class Principal extends javax.swing.JFrame {
             }
             if(pilaOperadores.isEmpty())
             {
+                if(band == true)
+                    CodIntDW(expPosfija, "");
                 ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
                 if(ban == false)
                     return false;
@@ -794,7 +802,9 @@ public class Principal extends javax.swing.JFrame {
                     n1 = pilaSemantica.pop();
                     resu = tablaTiposOp1[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
                     if(!resu.equals("-1"))
-                        pilaSemantica.push(resu);
+                    {
+                       pilaSemantica.push(resu);
+                    }
                     else
                     {
                         err += "Error semantico en linea " + nlinea + " tipos de dato no compatibles \n";
@@ -809,7 +819,9 @@ public class Principal extends javax.swing.JFrame {
                     n1 = pilaSemantica.pop();
                     resu = tablaTiposOp2[Integer.parseInt(n2)][Integer.parseInt(n1)]; 
                     if(!resu.equals("-1"))
+                    {
                         pilaSemantica.push(resu);
+                    }
                     else
                     {
                         err += "Error semantico en linea " + nlinea + " tipos de dato no compatibles \n";
@@ -895,6 +907,18 @@ public class Principal extends javax.swing.JFrame {
                             // revisar print vacio, error codObjeto
                     }
                 break;
+            case "106": // Fin Do While
+                resu = tablaAsigTipo[2][Integer.parseInt(pilaSemantica.pop())];
+                if(!resu)
+                {
+                    err += "Error semantico en linea " + nlinea + " error de tipo en en la condición del while \n";
+                    errores.setText(err);
+                    res+="La cadena no se acepta...";
+                    sintactico.setText(res);
+                    return false;
+                } 
+                estadoAntSw = "";
+                break;
             default:
                 resu = tablaAsigTipo[tipoAsig][Integer.parseInt(pilaSemantica.pop())];
                 if(!resu)
@@ -940,47 +964,41 @@ public class Principal extends javax.swing.JFrame {
     
     private void CodIntDW(String exp, String asig)
     {
-        puntero = 0;
         String pos[] = exp.split(" ");
         int con = 1;
         int conSt = 1;
         for(int i = 0; i<pos.length; i++)
         {
-            if(asig.equals("while"))
-                {
-                    for(i = 0; i<pos.length; i++)
+            if(!pos[i].equals("+")&&!pos[i].equals("-")&&!pos[i].equals("*")&&!pos[i].equals("/") && !pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
+            {
+                if(punterodw < con)
                     {
-                        if(!pos[i].equals("<")&&!pos[i].equals(">")&&!pos[i].equals("<=")&&!pos[i].equals(">=")&&!pos[i].equals("==")&&!pos[i].equals("!="))
+                        if(!expPosfija.isEmpty())
                         {
-                            if(puntero < con)
-                                {
-                                    if(!expPosfija.isEmpty())
-                                    {
-                                        codigoObjeto += "  float VDW" + con + " = " + pos[i]+";" + "\n";
-                                        puntero = con;
-                                        con++;
-                                    }
-                                }
-                                else
-                                {
-                                    if(!expPosfija.isEmpty())
-                                    {
-                                        codigoObjeto += "  VDW" + con + " = " + pos[i]+";" + "\n";
-                                        //puntero = con;
-                                        con++;
-                                    }
-                                }
-                            }
-                        else
+                            codigoObjeto += "  float VDW" + con + " = " + pos[i]+";" + "\n";
+                            punterodw = con;
+                            con++;
+                        }
+                    }
+                    else
+                    {
+                        if(!expPosfija.isEmpty())
                         {
-                            con-=2;
-                            codigoObjeto += "  VDW" + con + " = " + "VDW" + con + pos[i] + "VDW" + (con+1) + ";\n";
-                            codigoObjeto += "  if("+"VDW"+con+")";
+                            codigoObjeto += "  VDW" + con + " = " + pos[i]+";" + "\n";
+                            //puntero = con;
                             con++;
                         }
                     }
                 }
+            else
+            {
+                con-=2;
+                codigoObjeto += "  VDW" + con + " = " + "VDW" + con + pos[i] + "VDW" + (con+1) + ";\n";
+                con++;
+            }
         }
+        codigoObjeto += "  if("+"VDW"+(con-1)+")";
+        band = false;
     }
     
     private void CodInt(String exp, String asig)
@@ -1088,11 +1106,6 @@ public class Principal extends javax.swing.JFrame {
         pila.clear();
         pila.push("$");
         pila.push("q0");
-        pilaOperadores.clear();
-        pilaSemantica.clear();
-        puntero = 0;
-        punteroSt = 0;
-        cont = 0;
     }
 
     private void inicializar() {
@@ -1448,15 +1461,35 @@ public class Principal extends javax.swing.JFrame {
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         InicializarPilas();
         Limpiar();
+        pilaOperadores.clear();
+        pilaSemantica.clear();
+        pilaDoWhile.clear();
+        puntero = 0;
+        punterodw = 0;
+        punteroSt = 0;
+        cont = 0;
         tablaSimbolos.clear();
         res = "";
         err = "";
+        ban = true;
+        estadoAntSw = "";
+        estadoSOP = "";
+        est = "";
+        compCadenaBand = false;
         expPosfija = "";
         expInfija = "";
         codigoObjeto = "";
         doWhile = "";
-        bandDoWhile = false;
+        band = false;
         punteroDoWhile = 0;
+        lexico.setText("");
+        sintactico.setText("");
+        errores.setText("");
+        interm.setText("");
+        vAsig = "";
+        tipo = -1;
+        tipoAsig = -1;
+        tipoSwitch = -1;
         AnalisisLexico();
         interm.setText(codigoObjeto);
         //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())

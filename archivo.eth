@@ -1,19 +1,11 @@
-programa
-{
-int a;
-int b;
-a = 1;
-b = 1;
+programa {
+String a;
+int x;
+float y;
+boolean b, d;
 do
 {
-do
-{
-print(a);
-a = a + 1;
+x = 5;
 }
-while(a<=10);
-print(b);
-b = b + 1;
-}
-while(b<=10);
+while(5 > 10);
 }
