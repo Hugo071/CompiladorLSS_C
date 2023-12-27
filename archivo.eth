@@ -1,11 +1,28 @@
 programa {
 String a;
 int x;
-float y;
-boolean b, d;
-do
+switch(x)
 {
-x = 5;
+case 1:
+break;
+default:
 }
-while(5 > 10);
+switch(x)
+{
+case 1:
+break;
+default:
+}
+switch(x)
+{
+case 1:
+break;
+default:
+}
+switch(x)
+{
+case 1:
+break;
+default:
+}
 }

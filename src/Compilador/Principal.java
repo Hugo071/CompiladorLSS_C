@@ -40,6 +40,7 @@ public class Principal extends javax.swing.JFrame {
     Stack<String> pilaOperadores = new Stack();
     Stack<String> pilaSemantica = new Stack();
     String expPosfija = "", intermedio, vAsig, estadoAntSw = "", estadoSOP = "", expInfija="", est="";
+    ArrayList<String> opciones = new ArrayList<>();
     
     public boolean[][] tablaRelacional = 
     {
@@ -195,7 +196,7 @@ public class Principal extends javax.swing.JFrame {
     };
     String res, err, codigoObjeto = "", var, doWhile;
     boolean ban=true;
-    int tipo = -1, puntero = 0, cont = 0, punterodw = 0;
+    int tipo = -1, puntero = 0, cont = 0, punterodw = 0, punterosw = 0, con = 1;
     int tipoAsig = -1, tipoSwitch = -1;
     boolean compCadenaBand = false, band = false;
     int punteroSt = 0, punteroDoWhile = 0;
@@ -358,7 +359,7 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "15":
             case "43":
-                // Guardar el tipo de dato de la variable a la que se le asigna, o de la variable en los parentecis del switch 
+                // Guardar el tipo de dato de la variable a la que se le asigna, o de la variable en los parentesis del switch 
                 ban = TipoAsigSw(lexema, nlinea, estado);
                 if(ban == false)
                     return false;
@@ -525,7 +526,16 @@ public class Principal extends javax.swing.JFrame {
             vAsig = lexema;
         }
         else if(tablaSimbolos.get(lexema) != null && estado.equals("43")) // identificador de switchStatement
+        {
             tipoSwitch = tablaSimbolos.get(lexema);
+            if(con == 1)
+            {
+                codigoObjeto += "  float VSW" + (con) + " = " + lexema + ";\n";
+                con++;
+            }
+            else
+                codigoObjeto += "  VSW" + (con-1) + " = " + lexema + ";\n";
+            }
         else
         {
             err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " no existe" + "\n";
@@ -588,7 +598,7 @@ public class Principal extends javax.swing.JFrame {
         }
         if(estadoAntSw.equals("95"))
         {
-            ban = SemanticoEvExp(nlinea);
+            ban = SemanticoEvExp(nlinea, lexema);
             if(ban == false)
                     return false;
         }
@@ -734,7 +744,7 @@ public class Principal extends javax.swing.JFrame {
             }
             if (!scan.equals("1")) 
             {
-                ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
+                ban = SemanticoEvExp(nlinea, "");// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
                 if(ban == false)
                     return false;
             }
@@ -784,7 +794,7 @@ public class Principal extends javax.swing.JFrame {
             {
                 if(band == true)
                     CodIntDW(expPosfija, "");
-                ban = SemanticoEvExp(nlinea);// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
+                ban = SemanticoEvExp(nlinea, "");// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
                 if(ban == false)
                     return false;
             }
@@ -861,7 +871,7 @@ public class Principal extends javax.swing.JFrame {
         return true;
     }
     
-    private boolean SemanticoEvExp(String nlinea)
+    private boolean SemanticoEvExp(String nlinea, String lexema)
     {
         boolean resu;
         String tipo="";
@@ -878,6 +888,7 @@ public class Principal extends javax.swing.JFrame {
                     return false;
                 } 
                 estadoAntSw = "";
+                opciones.add(lexema);
                 break;
             case "45":
                     if(!pilaSemantica.isEmpty())
@@ -960,6 +971,10 @@ public class Principal extends javax.swing.JFrame {
                 interm.setText(codigoObjeto);
                 break;
         }
+    }
+    
+    private void CodIntSW(ArrayList<String> opciones)
+    {
     }
     
     private void CodIntDW(String exp, String asig)
@@ -1478,9 +1493,11 @@ public class Principal extends javax.swing.JFrame {
         compCadenaBand = false;
         expPosfija = "";
         expInfija = "";
+        con = 1;
         codigoObjeto = "";
         doWhile = "";
         band = false;
+        punterosw = 0;
         punteroDoWhile = 0;
         lexico.setText("");
         sintactico.setText("");
@@ -1488,6 +1505,7 @@ public class Principal extends javax.swing.JFrame {
         interm.setText("");
         vAsig = "";
         tipo = -1;
+        opciones.clear();
         tipoAsig = -1;
         tipoSwitch = -1;
         AnalisisLexico();
