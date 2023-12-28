@@ -24,6 +24,7 @@ import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class Principal extends javax.swing.JFrame {
+    //Comentario commit
     String scan = "";
     NumeroLinea numerolinea2;
     HerramientaArchivo archivo;
