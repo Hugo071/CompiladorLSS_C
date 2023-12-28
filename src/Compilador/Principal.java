@@ -200,10 +200,11 @@ public class Principal extends javax.swing.JFrame {
     String res, err, codigoObjeto = "", var, doWhile;
     boolean ban = true;
     int tipo = -1, puntero = 0, cont = 0, punterodw = 0, punterosw = 0, con = 1, conFSW = 0, conLV = 0, contdf = 0;
-    int tipoAsig = -1, tipoSwitch = -1, tipoSwitchAnt = -1;
-    boolean compCadenaBand = false, band = false;
+    int tipoAsig = -1, tipoSwitch = -1, tipoSwitchAnt = -1, conSW = 0;
+    boolean compCadenaBand = false, band = false, banSW = false, banCase = false;
     int punteroSt = 0, punteroDoWhile = 0;
     public Stack<Integer> pilaDoWhile = new Stack();
+    public Stack<Integer> pilaContSw = new Stack();
 
     public Principal() {
         this.manager = new UndoManager();
@@ -247,6 +248,7 @@ public class Principal extends javax.swing.JFrame {
                             resu += token + "\n";
                             ban = AnalisisSintactico(token + "", infoToken.lexema, (infoToken.numeroLinea + 1) + "");
                             if (ban == false) {
+                                codigoObjeto = "";
                                 return;
                             }
                             lexico.setText(resu);
@@ -254,6 +256,7 @@ public class Principal extends javax.swing.JFrame {
                             resu += token.getSimbolo() + "\n";
                             ban = AnalisisSintactico(token.getSimbolo(), infoToken.lexema, (infoToken.numeroLinea + 1) + "");
                             if (ban == false) {
+                                codigoObjeto = "";
                                 return;
                             }
                             lexico.setText(resu);
@@ -327,7 +330,7 @@ public class Principal extends javax.swing.JFrame {
                 TipoID(estado);
                 break;
             case "16": // Switch
-
+                    
                 break;
             case "17": // Do
                 punteroDoWhile++;
@@ -425,19 +428,23 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "95": // estado anterior al id-num-vchar-true-false que se coloca despues del case en el sw (case 1: ejemplo)
                 estadoAntSw = "95";
+                banCase = true;
                 break;
             case "98": //Fin Switch
                 tipoSwitch = tipoSwitchAnt;
-                codigoObjeto += "Fin_Switch" + conFSW + ":\n";
-                //conFSW--;
+                codigoObjeto += "Fin_Switch" + pilaContSw.peek() + "_sw" + pilaContSw.peek() + ":\n";
                 codigoObjeto = Intercambio(codigoObjeto);
                 opciones = (Stack<String>) opcionesant.clone();
                 opcionesant.clear();
+                pilaContSw.pop();
+                conFSW--;
+                conSW--;
+                banSW = false;
                 break;
             case "100":
                 contdf++;
-                opciones.push("default" + contdf);
-                codigoObjeto += "case_default" + contdf + ":\n";
+                opciones.push("default");
+                codigoObjeto += "case_default" + "_sw" + pilaContSw.peek() + ":\n";
                 break;
             /*
             case "29": // Expresiones Relacional
@@ -449,10 +456,17 @@ public class Principal extends javax.swing.JFrame {
             case "105": //Dos puntos del case
                 if (tipoSwitch == 3) {
                     //strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
-                    codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")))\n\tgoto case_¿;\n";
+                    if(banSW == false)
+                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")))\n\tgoto case_¿_sw" + conFSW + ";\n";
+                    else
+                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")))\n\tgoto case_?_sw" + conFSW + ";\n";
                 } else {
-                    codigoObjeto += "   if(!(VSW" + (con - 1) + "==" + opciones.peek() + "))\n\tgoto case_¿;\n";
+                    if(banSW == false)
+                        codigoObjeto += "   if(!(VSW" + (con - 1) + "==" + opciones.peek() + "))\n\tgoto case_¿_sw" + conFSW + ";\n";
+                    else
+                        codigoObjeto += "   if(!(VSW" + (con - 1) + "==" + opciones.peek() + "))\n\tgoto case_?_sw" + conFSW + ";\n";
                 }
+                banCase = false;
                 break;
             case "106": // ) do while
                 band = true;
@@ -468,7 +482,7 @@ public class Principal extends javax.swing.JFrame {
                 pilaDoWhile.pop();
                 break;
             case "109":
-                codigoObjeto += "goto Fin_Switch" + conFSW + ";\n";
+                codigoObjeto += "goto Fin_Switch" + pilaContSw.peek() + "_sw" + pilaContSw.peek() + ";\n";
                 break;
         }
 // //////////////////////////////////////////////////////////
@@ -548,12 +562,34 @@ public class Principal extends javax.swing.JFrame {
             vAsig = lexema;
         } else if (tablaSimbolos.get(lexema) != null && estado.equals("43")) // identificador de switchStatement
         {
+            conSW++;
+            if(conSW >= 3)
+            {
+                err += "Error, no es posible anidar más de dos switch" + "\n";
+                errores.setText(err);
+                res += "La cadena no se acepta...";
+                sintactico.setText(res);
+                return false;
+            }
             tipoSwitchAnt = tipoSwitch;
             opcionesant = (Stack<String>) opciones.clone();
             opciones.clear();
+            if(!opcionesant.isEmpty())
+                banSW = true;
             tipoSwitch = tablaSimbolos.get(lexema);
+            if(tipoSwitch == 1)
+            {
+                {
+                err += "Error, no es posible usar el tipo de dato float por el punto decimal en el case" + "\n";
+                errores.setText(err);
+                res += "La cadena no se acepta...";
+                sintactico.setText(res);
+                return false;
+            }
+            }
             VarSW(lexema, tipoSwitch);
             conFSW++;
+            pilaContSw.push(conFSW);
         } else {
             err += "Error semantico en linea " + nlinea + " el identificador " + lexema + " no existe" + "\n";
             errores.setText(err);
@@ -593,7 +629,7 @@ public class Principal extends javax.swing.JFrame {
                     compCadenaBand = true;
                     expPosfija += lexema + " ";
                 } else {
-                    if (!estadoAntSw.equals("45") && tipoSwitch == -1) {
+                    if (!estadoAntSw.equals("45") && banCase == false) {
                         codigoObjeto += "  strcpy(" + vAsig + ", " + lexema + ");\n";
                     }
                 }
@@ -875,10 +911,10 @@ public class Principal extends javax.swing.JFrame {
                 estadoAntSw = "";
                 if (tipoSwitch == 3) {
                     opciones.push(lexema.substring(1, lexema.length() - 1));
-                    codigoObjeto += "case_" + lexema.substring(1, lexema.length() - 1) + ":\n";
+                    codigoObjeto += "case_" + lexema.substring(1, lexema.length() - 1) + "_sw" + pilaContSw.peek() + ":\n";
                 } else {
                     opciones.push(lexema);
-                    codigoObjeto += "case_" + lexema + ":\n";
+                    codigoObjeto += "case_" + lexema + "_sw" + pilaContSw.peek() + ":\n";
                 }
                 conLV++;
                 break;
@@ -977,7 +1013,7 @@ public class Principal extends javax.swing.JFrame {
             }
         } else {
             if (punterosw < con) {
-                codigoObjeto += " char VSW" + con + "[256] = \"" + lexema + "\";\n";
+                codigoObjeto += " char VSW" + con + "[256] = " + lexema + ";\n";
                 punterosw = con;
                 con++;
             } else {
@@ -1461,6 +1497,7 @@ public class Principal extends javax.swing.JFrame {
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         InicializarPilas();
         Limpiar();
+        pilaContSw.clear();
         pilaOperadores.clear();
         pilaSemantica.clear();
         pilaDoWhile.clear();
@@ -1468,6 +1505,7 @@ public class Principal extends javax.swing.JFrame {
         opcionesaux.clear();
         opcionesant.clear();
         conFSW = 0;
+        contdf = 0;
         puntero = 0;
         punterodw = 0;
         punteroSt = 0;
@@ -1476,6 +1514,7 @@ public class Principal extends javax.swing.JFrame {
         res = "";
         err = "";
         ban = true;
+        banCase = false;
         estadoAntSw = "";
         estadoSOP = "";
         est = "";
@@ -1484,7 +1523,9 @@ public class Principal extends javax.swing.JFrame {
         expInfija = "";
         con = 1;
         codigoObjeto = "";
+        banSW = false;
         doWhile = "";
+        conSW = 0;
         band = false;
         punterosw = 0;
         punteroDoWhile = 0;
@@ -1514,7 +1555,10 @@ public class Principal extends javax.swing.JFrame {
             opcionesaux.pop();
             int tpilaaux = opcionesaux.size();
             for (int i = 0; i < tpilaaux; i++) {
-                codigoObjeto = codigoObjeto.replaceFirst("¿", opcionesaux.pop());
+                if(banSW == false)
+                    codigoObjeto = codigoObjeto.replaceFirst("¿", opcionesaux.pop());
+                else
+                    codigoObjeto = codigoObjeto.replaceFirst("\\?", opcionesaux.pop());
             }
             return codigoObjeto;
         }
