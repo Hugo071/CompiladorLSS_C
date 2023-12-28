@@ -1,56 +1,60 @@
-programa {
-int opcion;
-int cal1, cal2, cal3, cal4, cal5, sumacal, promedio;
-int n;
-n = 5;
-print("Bienvenido a nuestro programa");
-do
+programa
 {
-	print("Escribe la opcion: 0 para salir - 1 para calcular promedios...");
-	opcion = scan();
-	switch(opcion)
-	{
-	case 1:
-	     print("Escribe 5 calificaciones...");
-	     print("Calificación 1:");
-	     cal1 = scan();
-	     print("Calificación 2:");
-	     cal2 = scan();
-	     print("Calificación 3:");
-	     cal3 = scan();
-	     print("Calificación 4:");
-	     cal4 = scan();
-	     print("Calificación 5:");
-	     cal5 = scan();
-	     sumacal = cal1 + cal2 + cal3 + cal4 + cal5;
-	     promedio = sumacal / n;
-	     print("Tu promedio es:");
-	     print(promedio);
-	switch(promedio)
-	{
-		case 6:
-		print("NA");
-		break;
-		case 7:
-		print("Pasaste, puedes mejorar");
-		break;
-		case 8:
-		print("Lo lograste");
-		break;
-		case 9:
-		print("Bien hecho");
-		break;
-		case 10:
-		print("Excelente");
-		break;
-		default:
-		print("Echale ganas");
-	}
-	break;
-	default:
-	}
-	
-}
-while(opcion != 0);
-print("Gracias por usar nuestro programa");
+String opcion;
+float n1, n2, res;
+do {
+            print("Calculadora Simple");
+            print("1. Suma");
+            print("2.  Resta");
+            print("3. Multiplicación");
+            print("4. División");
+            print("5. Salir");
+            print("Seleccione una opción: ");
+
+            opcion = scan();
+
+            switch (opcion) {
+                case "1":
+                    print("Ingrese el primer numero de la suma:");
+                    n1 = scan();
+                    print("Ingrese el segundo numero de la suma");
+                     n2 = scan();
+                    res = n1 + n2;
+                    print("El resultado de la suma es: ");
+                    print(res);
+                    break;
+                case "2":
+                    print("Ingrese el primer numero de la resta:");
+                    n1 = scan();
+                    print("Ingrese el segundo numero de la resta");
+                     n2 = scan();
+                    res = n1 - n2;
+                    print("El resultado de la resta es: ");
+                    print(res);
+                    break;
+                case "3":
+                    print("Ingrese el primer numero de la multiplicacion:");
+                    n1 = scan();
+                    print("Ingrese el segundo numero de la multiplicacion");
+                     n2 = scan();
+                    res = n1 * n2;
+                    print("El resultado de la multiplicacion es: ");
+                    print(res);
+                    break;
+                case "4":
+                    print("Ingrese el primer numero de la division:");
+                    n1 = scan();
+                    print("Ingrese el segundo numero de la division");
+                     n2 = scan();
+                    res = n1 / n2;
+                    print("El resultado de la division es: ");
+                    print(res);
+                    break;
+                case "5":
+                    print("Saliendo de la calculadora.");
+                    break;
+                default:
+                    print("Opción no válida. Intente de nuevo.");
+            }
+        } while (opcion != "5");
 }

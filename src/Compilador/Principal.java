@@ -457,9 +457,9 @@ public class Principal extends javax.swing.JFrame {
                 if (tipoSwitch == 3) {
                     //strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
                     if(banSW == false)
-                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")))\n\tgoto case_¿_sw" + conFSW + ";\n";
+                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")== 0 ? 1 : 0))\n\tgoto case_¿_sw" + conFSW + ";\n";
                     else
-                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")))\n\tgoto case_?_sw" + conFSW + ";\n";
+                        codigoObjeto += "   if(!(strcmp( VSW" + (con - 1) + ", \"" + opciones.peek() + "\")== 0 ? 1 : 0))\n\tgoto case_?_sw" + conFSW + ";\n";
                 } else {
                     if(banSW == false)
                         codigoObjeto += "   if(!(VSW" + (con - 1) + "==" + opciones.peek() + "))\n\tgoto case_¿_sw" + conFSW + ";\n";
@@ -1013,7 +1013,10 @@ public class Principal extends javax.swing.JFrame {
             }
         } else {
             if (punterosw < con) {
-                codigoObjeto += " char VSW" + con + "[256] = " + lexema + ";\n";
+                if(lexema.equals("\"(\\.|[^\"\\])*\""))
+                    codigoObjeto += " char VSW" + con + "[256] = " + lexema + ";\n";
+                else
+                    codigoObjeto += "  char VSW" + con + "[256];\n" + "  strcpy(VSW" + con + ", " + lexema + ")" + ";\n";
                 punterosw = con;
                 con++;
             } else {
@@ -1062,7 +1065,10 @@ public class Principal extends javax.swing.JFrame {
                 if (compCadenaBand == true) {
                     if (punteroSt < conSt) {
                         if (!expPosfija.isEmpty()) {
-                            codigoObjeto += "  char VS" + conSt + "[256]" + " = " + pos[i] + ";\n";
+                            if(pos[i].equals("\"(\\.|[^\"\\])*\""))
+                                codigoObjeto += "  char VS" + conSt + "[256]" + " = " + pos[i] + ";\n";
+                            else
+                                codigoObjeto += "  char VS" + conSt + "[256];\n" + "  strcpy(VS" + conSt + ", " + pos[i] + ")" + ";\n";
                             punteroSt = conSt;
                             conSt++;
                         }
@@ -1539,6 +1545,13 @@ public class Principal extends javax.swing.JFrame {
         tipoSwitch = -1;
         AnalisisLexico();
         interm.setText(codigoObjeto);
+        if(codigoFuente.getText().equals(""))
+        {
+            lexico.setText("");
+            sintactico.setText("");
+            errores.setText("");
+            interm.setText("");
+        }
         //for (Map.Entry<String, Integer> entry : tablaSimbolos.entrySet())
         //System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
     }//GEN-LAST:event_jButton6ActionPerformed
