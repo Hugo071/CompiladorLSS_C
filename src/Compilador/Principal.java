@@ -201,8 +201,8 @@ public class Principal extends javax.swing.JFrame {
     boolean ban = true;
     int tipo = -1, puntero = 0, cont = 0, punterodw = 0, punterosw = 0, con = 1, conFSW = 0, conLV = 0, contdf = 0;
     int tipoAsig = -1, tipoSwitch = -1, tipoSwitchAnt = -1, conSW = 0;
-    boolean compCadenaBand = false, band = false, banSW = false, banCase = false;
-    int punteroSt = 0, punteroDoWhile = 0;
+    boolean compCadenaBand = false, band = false, banSW = false, banCase = false, bandCS;
+    int punteroSt = 0, punteroStDW = 0, punteroDW = 0, punteroDoWhile = 0, tasig = -1;
     public Stack<Integer> pilaDoWhile = new Stack();
     public Stack<Integer> pilaContSw = new Stack();
 
@@ -398,7 +398,7 @@ public class Principal extends javax.swing.JFrame {
                         break;
                 }
                 break;
-            case "48":
+            case "48": // ; de expresion
                 ban = FinExpresion(lexema, nlinea);
                 if (ban == false) {
                     return false;
@@ -426,19 +426,24 @@ public class Principal extends javax.swing.JFrame {
                     return false;
                 }
                 break;
+            case "86":
+                banCase = true;
+                break;
             case "95": // estado anterior al id-num-vchar-true-false que se coloca despues del case en el sw (case 1: ejemplo)
                 estadoAntSw = "95";
                 banCase = true;
+                bandCS = true;
                 break;
             case "98": //Fin Switch
                 tipoSwitch = tipoSwitchAnt;
-                codigoObjeto += "Fin_Switch" + pilaContSw.peek() + "_sw" + pilaContSw.peek() + ":\n";
+                codigoObjeto += "Fin_Switch" + pilaContSw.peek() + "_sw" + pilaContSw.peek() + ":\n\n";
                 codigoObjeto = Intercambio(codigoObjeto);
                 opciones = (Stack<String>) opcionesant.clone();
                 opcionesant.clear();
                 pilaContSw.pop();
-                conFSW--;
+                //conFSW--;
                 conSW--;
+                banCase = true;
                 banSW = false;
                 break;
             case "100":
@@ -467,6 +472,8 @@ public class Principal extends javax.swing.JFrame {
                         codigoObjeto += "   if(!(VSW" + (con - 1) + "==" + opciones.peek() + "))\n\tgoto case_?_sw" + conFSW + ";\n";
                 }
                 banCase = false;
+                bandCS = false;
+                compCadenaBand = false;
                 break;
             case "106": // ) do while
                 band = true;
@@ -480,6 +487,8 @@ public class Principal extends javax.swing.JFrame {
             case "108": //Fin de do while
                 codigoObjeto += " goto do" + pilaDoWhile.peek() + ";\n";
                 pilaDoWhile.pop();
+                banCase = false;
+                compCadenaBand = false;
                 break;
             case "109":
                 codigoObjeto += "goto Fin_Switch" + pilaContSw.peek() + "_sw" + pilaContSw.peek() + ";\n";
@@ -625,9 +634,10 @@ public class Principal extends javax.swing.JFrame {
                 break;
             case "38": // String
                 pilaSemantica.push("3");
-                if (tipoAsig == 2) {
+                if (tipoAsig == 2 || banCase == true) {
                     compCadenaBand = true;
-                    expPosfija += lexema + " ";
+                    if(bandCS == false)
+                        expPosfija += lexema + " ";
                 } else {
                     if (!estadoAntSw.equals("45") && banCase == false) {
                         codigoObjeto += "  strcpy(" + vAsig + ", " + lexema + ");\n";
@@ -797,7 +807,7 @@ public class Principal extends javax.swing.JFrame {
                 //System.out.println("pila" + pilaOperadores);
                 //System.out.println("posfija " + expPosfija);
                 simboloOp = pilaOperadores.pop();
-                if (pilaSemantica.size() == 2) {
+                if (pilaSemantica.size() == 2) 
                     if (simboloOp.equals("<") || simboloOp.equals(">") || simboloOp.equals("<=") || simboloOp.equals(">=")) {
                         estadoSOP = "1";
                         ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
@@ -817,7 +827,7 @@ public class Principal extends javax.swing.JFrame {
                         //CodIntDW(expPosfija, "");
                         //return true;
                     }
-                } else {
+                 else {
                     estadoSOP = "";
                     ban = SemanticoOp(nlinea);// Método que determina el tipo de dato resultante y lo mete a la pila semantica
                     if (ban == false) {
@@ -829,6 +839,7 @@ public class Principal extends javax.swing.JFrame {
                 if (band == true) {
                     CodIntDW(expPosfija, "");
                 }
+                compCadenaBand = false;
                 ban = SemanticoEvExp(nlinea, "");// Método que evalua si el resultado semantico de la expresión puede asignarse en la variable
                 if (ban == false) {
                     return false;
@@ -1028,14 +1039,38 @@ public class Principal extends javax.swing.JFrame {
 
     private void CodIntDW(String exp, String asig) {
         String pos[] = exp.split(" ");
+        int tasig;
         int con = 1;
         int conSt = 1;
         for (int i = 0; i < pos.length; i++) {
-            if (!pos[i].equals("+") && !pos[i].equals("-") && !pos[i].equals("*") && !pos[i].equals("/") && !pos[i].equals("<") && !pos[i].equals(">") && !pos[i].equals("<=") && !pos[i].equals(">=") && !pos[i].equals("==") && !pos[i].equals("!=")) {
-                if (punterodw < con) {
+            if (!pos[i].equals("+") && !pos[i].equals("-") && !pos[i].equals("*") && !pos[i].equals("/") && !pos[i].equals("<") 
+                    && !pos[i].equals(">") && !pos[i].equals("<=") && !pos[i].equals(">=") 
+                    && !pos[i].equals("==") && !pos[i].equals("!=")) {
+                if(tablaSimbolos.get(pos[i]) != null){
+                    tasig = tablaSimbolos.get(pos[i]);
+                }else{
+                    tasig = 5;
+                }
+                if (pos[i].matches("\"(\\.|[^\"])*\"")) {
+                    if (punteroStDW < conSt) {
+                        if (!expPosfija.isEmpty()) {
+                            codigoObjeto += "  char VSDW" + conSt + "[256] = "+ pos[i]+ ";\n";
+                            punteroStDW = conSt;
+                            conSt++;
+                        }
+                    }
+                }else if (tasig==3) {
+                    if (punteroStDW < conSt) {
+                        if (!expPosfija.isEmpty()) {
+                            codigoObjeto += "  char VSDW" + conSt + "[256];\n" + "  strcpy(VSDW" + conSt + ", " + pos[i] + ")" + ";\n";
+                            punteroStDW = conSt;
+                            conSt++;
+                        }
+                    } 
+                }else if (punteroDW < con) {
                     if (!expPosfija.isEmpty()) {
                         codigoObjeto += "  float VDW" + con + " = " + pos[i] + ";" + "\n";
-                        punterodw = con;
+                        punteroDW = con;
                         con++;
                     }
                 } else {
@@ -1046,12 +1081,35 @@ public class Principal extends javax.swing.JFrame {
                     }
                 }
             } else {
-                con -= 2;
-                codigoObjeto += "  VDW" + con + " = " + "VDW" + con + pos[i] + "VDW" + (con + 1) + ";\n";
-                con++;
+                if (compCadenaBand == true || tipoAsig == 3) {
+                    if (punteroDW < con) {
+                        if(pos[i].equals("==")){
+                            codigoObjeto += " float VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
+                            punteroDW = con;
+                            con++;
+                        }else if(pos[i].equals("!=")){
+                            codigoObjeto += " float VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 0 : 1;" + "\n";
+                            punteroDW = con;
+                            con++;
+                        }
+                    } else {
+                        //con-=2;
+                        //conSt=-2;
+                        if(pos[i].equals("=="))
+                            codigoObjeto += "  VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
+                        else if(pos[i].equals("!="))
+                            codigoObjeto += "  VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 0 : 1;" + "\n";
+                        //con++;
+                        //conSt++;
+                    }
+                } else {
+                    con -= 2;
+                    codigoObjeto += "  VDW" + con + " = " + "VDW" + con + " " + pos[i] + " VDW" + (con + 1) + ";" + "\n";
+                    con++;
+                }
             }
         }
-        codigoObjeto += "  if(" + "VDW" + (con - 1) + ")";
+        codigoObjeto += "  if(" + "VDW" + (con-1) + ")";
         band = false;
     }
 
@@ -1061,14 +1119,23 @@ public class Principal extends javax.swing.JFrame {
         int con = 1;
         int conSt = 1;
         for (int i = 0; i < pos.length; i++) {
-            if (!pos[i].equals("+") && !pos[i].equals("-") && !pos[i].equals("*") && !pos[i].equals("/") && !pos[i].equals("<") && !pos[i].equals(">") && !pos[i].equals("<=") && !pos[i].equals(">=") && !pos[i].equals("==") && !pos[i].equals("!=")) {
-                if (compCadenaBand == true) {
+            if (!pos[i].equals("+") && !pos[i].equals("-") && !pos[i].equals("*") && !pos[i].equals("/") && !pos[i].equals("<") && !pos[i].equals(">") && !pos[i].equals("<=") 
+                    && !pos[i].equals(">=") && !pos[i].equals("==") && !pos[i].equals("!=")) {
+                if(tablaSimbolos.get(pos[i]) != null){
+                    tasig = tablaSimbolos.get(pos[i]);
+                }else{
+                    tasig = -1;
+                }
+                if (compCadenaBand == true || tasig == 3) {
                     if (punteroSt < conSt) {
                         if (!expPosfija.isEmpty()) {
-                            if(pos[i].equals("\"(\\.|[^\"\\])*\""))
+                            if(pos[i].matches("\"(\\.|[^\"])*\"")){
                                 codigoObjeto += "  char VS" + conSt + "[256]" + " = " + pos[i] + ";\n";
-                            else
+                                tasig = 3;
+                            }else{
                                 codigoObjeto += "  char VS" + conSt + "[256];\n" + "  strcpy(VS" + conSt + ", " + pos[i] + ")" + ";\n";
+                                tasig = 3;
+                            }
                             punteroSt = conSt;
                             conSt++;
                         }
@@ -1077,6 +1144,7 @@ public class Principal extends javax.swing.JFrame {
                             codigoObjeto += " strcpy(VS" + conSt + ", " + pos[i] + ")" + ";\n";
                             //puntero = con;
                             conSt++;
+                            tasig = 3;
                         }
                     }
                 } else {
@@ -1095,17 +1163,31 @@ public class Principal extends javax.swing.JFrame {
                     }
                 }
             } else {
-                if (compCadenaBand == true) {
+                if (compCadenaBand == true || tasig == 3) {
                     if (puntero < con) {
-                        codigoObjeto += "  float V" + con + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
-                        puntero = con;
-                        //con++;
+                        if(pos[i].equals("==")){
+                            codigoObjeto += " float V" + (con) + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
+                            puntero = con;
+                            //tasig = -1;
+                            con++;
+                        }else if(pos[i].equals("!=")){
+                            codigoObjeto += " float V" + (con) + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 0 : 1;" + "\n";
+                            puntero = con;
+                            //tasig = -1;
+                            con++;
+                        }
                     } else {
                         //con-=2;
                         //conSt=-2;
-                        codigoObjeto += "  V" + (con) + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
-                        //con++;
+                        if(pos[i].equals("==")){
+                            codigoObjeto += "  V" + (con) + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
+                            //tasig = -1;
+                        }else if(pos[i].equals("!=")){
+                            codigoObjeto += "  V" + (con) + " = strcmp(" + "VS" + (conSt - 2) + " , " + " VS" + (conSt - 1) + ") == 0 ? 0 : 1;" + "\n";
+                            //tasig = -1;
+                        con++;
                         //conSt++;
+                        }
                     }
                 } else {
                     con -= 2;
@@ -1115,10 +1197,12 @@ public class Principal extends javax.swing.JFrame {
             }
         }
         if (!expPosfija.isEmpty()) {
-            if (compCadenaBand == false) {
-                codigoObjeto += "  " + asig + " = " + "  V" + (con - 1) + ";\n";
+            if (tasig != 3) {
+                codigoObjeto += "  " + asig + " = " + "  V" + (con-1) + ";\n";
+                tasig = -1;
             } else {
                 codigoObjeto += "  " + asig + " = " + "  V" + (con) + ";\n";
+                tasig = -1;
             }
         }
     }
@@ -1208,7 +1292,6 @@ public class Principal extends javax.swing.JFrame {
                 formWindowClosing(evt);
             }
         });
-        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         codigoFuente.setColumns(20);
         codigoFuente.setRows(5);
@@ -1219,13 +1302,9 @@ public class Principal extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(codigoFuente);
 
-        getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 53, 515, 280));
-
         lexico.setColumns(20);
         lexico.setRows(5);
         jScrollPane3.setViewportView(lexico);
-
-        getContentPane().add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 60, 506, 179));
 
         jToolBar1.setBackground(new java.awt.Color(255, 255, 255));
         jToolBar1.setRollover(true);
@@ -1296,26 +1375,17 @@ public class Principal extends javax.swing.JFrame {
         });
         jToolBar1.add(jButton6);
 
-        getContentPane().add(jToolBar1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 35));
-
         sintactico.setColumns(20);
         sintactico.setRows(5);
         jScrollPane4.setViewportView(sintactico);
-
-        getContentPane().add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 350, 480, 90));
 
         errores.setColumns(20);
         errores.setRows(5);
         jScrollPane1.setViewportView(errores);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 450, 480, -1));
-
         interm.setColumns(20);
         interm.setRows(5);
         jScrollPane5.setViewportView(interm);
-
-        getContentPane().add(jScrollPane5, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 270, 510, 260));
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 540, 1090, 20));
 
         jMenu1.setText("Archivo");
 
@@ -1423,6 +1493,47 @@ public class Principal extends javax.swing.JFrame {
 
         setJMenuBar(jMenuBar1);
 
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 1100, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 515, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(49, 49, 49)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 506, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 510, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1090, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(17, 17, 17)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(4, 4, 4)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1515,7 +1626,10 @@ public class Principal extends javax.swing.JFrame {
         puntero = 0;
         punterodw = 0;
         punteroSt = 0;
+        punteroStDW = 0;
+        punteroDW = 0;
         cont = 0;
+        tasig = -1;
         tablaSimbolos.clear();
         res = "";
         err = "";

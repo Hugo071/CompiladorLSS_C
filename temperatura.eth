@@ -1,0 +1,16 @@
+programa{
+float celcius, farenheit;
+boolean repetir;
+do
+{
+	print("Ingrese la temperatura en grados celcius");
+	celcius = scan();
+	farenheit = (celcius * 9/5) + 32;
+	print("La temperatura en grados farenhint es:");
+	print(farenheit);
+	print("");
+	print("Si desea conervertir otra temperatura ingrese 1, sino ingrese 0");
+	repetir = scan();
+}
+while(repetir);
+}
