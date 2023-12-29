@@ -1,8 +1,22 @@
 programa
 {
-String opcion;
+String opcion, a;
 float n1, n2, res;
+boolean op;
+opcion = a;
+opcion = "a";
+op = true;
+op = false;
+op = n1 <= 10;
+op = "a"=="opcion";
+op = a==opcion;
+op = a=="opcion";
 do {
+	do{
+	n1 = n1 + 1;
+	print("das");
+	print("n1");
+	}while(n1 <= 10);
             print("Calculadora Simple");
             print("1. Suma");
             print("2. Resta");
@@ -57,4 +71,9 @@ do {
                     print("Opción no válida. Intente de nuevo.");
             }
         } while (opcion != "5");
+do{
+	n1 = n1 + 1;
+	print("das");
+	print("n1");
+	}while(n1 <= 10);
 }

@@ -1095,12 +1095,14 @@ public class Principal extends javax.swing.JFrame {
                     } else {
                         //con-=2;
                         //conSt=-2;
-                        if(pos[i].equals("=="))
+                        if(pos[i].equals("==")){
                             codigoObjeto += "  VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 1 : 0;" + "\n";
-                        else if(pos[i].equals("!="))
+                            con++;
+                        }else if(pos[i].equals("!=")){
                             codigoObjeto += "  VDW" + (con) + " = strcmp(" + "VSDW" + (conSt - 2) + " , " + " VSDW" + (conSt - 1) + ") == 0 ? 0 : 1;" + "\n";
-                        //con++;
+                            con++;
                         //conSt++;
+                        }
                     }
                 } else {
                     con -= 2;
